@@ -2,14 +2,11 @@
 def entropy(y):
     N = len(y)
     s1 = (y == 1).sum() # binary classification tree; in this ex. "y=1" is to be classified
-    
     # events that always occur do not communicate information, hence if all values of y are the same, the entropy is 0
     if s1 == 0 or s1 == N: # shortcut without any calculation
         return 0
-    
     p = s1 / N
     q = 1 - p
-    
     return -p*np.log2(p)-q*np.log2(q)
     
 # Single Node; Wrapped in a DecisionTree wrapper
@@ -18,7 +15,7 @@ class TreeNode():
     def __init__(self, depth=0, max_depth=None):
         self.depth = depth
         self.max_depth = max_depth
-    
+        
     def fit(self, X, Y):
         if len(Y) == 1 or len(set(Y)) == 1: # base cases: if there is only 1 sample or multiple sample but only 1 target value
             self.col = None
@@ -38,12 +35,10 @@ class TreeNode():
             for col in columns: # iterate over all columns -> which column is best suited for the split
                 # find_split should find the best split for each col internally; compare splitting at different boundaries
                 ig, split = self.find_split(X, Y, col)
-
                 if ig > max_ig: # set values for the first split according to highest information gain 
                     max_ig = ig
                     best_split = split
-                    best_col = col
-                
+                    best_col = col                
                 if max_ig == 0: # if IG == 0 nothing is gained from splitting; base case
                     self.col = None
                     self.split = None
@@ -52,9 +47,7 @@ class TreeNode():
                     self.prediction = np.round(Y.mean()) # np.argmax(Y) # np.round(Y.mean()) ?
                 else:
                     self.col = best_col
-                    self.split = best_split
-                    
-
+                    self.split = best_split                 
                     # last base case: if we are at max_depth, we will not split anymore
                     if self.depth == self.max_depth:
                         #print("MAX DEPTH REACHED")
@@ -105,8 +98,8 @@ class TreeNode():
                         # call fit recursively on the child nodes. From this point on, more and more child nodes will be
                         # created recursively depending on information_gain and the depth relative to the max_depth
                         self.left.fit(Xleft, Yleft)
-                        self.right.fit(Xright, Yright)
-                    
+                        self.right.fit(Xright, Yright)   
+                        
     def find_split(self, X, Y, col):
         '''
         get boundaries of 0/1
@@ -128,23 +121,19 @@ class TreeNode():
         # iterate over all found boundaries, calculate information gain one by one
         for i in boundaries:
             split = (x_values[i] + x_values[i+1]) / 2 # works since x_values is sorted 
-            ig = self.information_gain(x_values, y_values, split)
-            
+            ig = self.information_gain(x_values, y_values, split)            
             if ig > max_ig:
                 max_ig = ig
-                best_split = split
-                
-        return max_ig, best_split
-        
+                best_split = split                
+        return max_ig, best_split        
+    
     def information_gain(self, X, Y, split):
         # split Y into left and right part; condition on sorted Y, X
         y0 = Y[X < split] 
         y1 = Y[X >= split]
-        N = len(Y)
-        
+        N = len(Y)        
         if len(y0) == 0 or len(y0) == N: # same as for entropy
-            return 0
-        
+            return 0        
         p0 = len(y0) / N
         p1 = 1 - p0        
         return entropy(Y) - p0*entropy(y0) - p1*entropy(y1)
@@ -167,13 +156,11 @@ class TreeNode():
                     p = self.prediction[1]
         else:
             p = self.prediction
-
         return p
     
     def predict(self, X): # calls predict_one for each individual x (=each column)
         N = len(X)
-        P = np.zeros(N)
-        
+        P = np.zeros(N)        
         for i in range(N):
             P[i] = self.predict_one(X[i])
         return P    
